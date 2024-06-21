@@ -6,6 +6,7 @@ const ThreeDGraph = ({ data }) => {
   const mountRef = useRef(null);
   const rendererRef = useRef(null);
   const controlsRef = useRef(null);
+  const pointsRef = useRef(null);
 
   useEffect(() => {
     let scene, camera, renderer, controls;
@@ -39,25 +40,26 @@ const ThreeDGraph = ({ data }) => {
       scene.add(axesHelper);
 
       // Points
-      const points = data.map(({ longitude, latitude, altitude }) => {
-        return new THREE.Vector3(longitude, latitude, altitude);
-      });
+      if (data && data.length > 0) {
+        const points = data.map(({ x, y, z }) => {
+          return new THREE.Vector3(x, y, z);
+        });
 
-      // Geometry for points
-      const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        // Geometry for points
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
 
-      // Material for points
-      const material = new THREE.PointsMaterial({ color: 0x00ff00 });
+        // Material for points
+        const material = new THREE.PointsMaterial({ color: 0x00ff00 });
 
-      // Create points cloud
-      const pointCloud = new THREE.Points(geometry, material);
-      scene.add(pointCloud);
+        // Create points cloud
+        pointsRef.current = new THREE.Points(geometry, material);
+        scene.add(pointsRef.current);
 
-      // Lines (edges)
-      const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
-      const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
-      const line = new THREE.Line(lineGeometry, lineMaterial);
-      scene.add(line);
+        const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
+        const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+        const line = new THREE.Line(lineGeometry, lineMaterial);
+        scene.add(line);
+      }
 
       // Animation loop
       const animate = () => {
