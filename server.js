@@ -75,6 +75,12 @@ app.post("/register", async (req, res) => {
     return res.status(400).json({ message: "Invalid email format" });
   }
 
+  if (password.length <= 5) {
+    return res
+      .status(400)
+      .json({ message: "Enter more than 6 digit password" });
+  }
+
   // Save user to database
   db.query(
     "INSERT INTO user (name, email, password, created_at) VALUES (?, ?, ?, NOW())",
