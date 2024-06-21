@@ -185,6 +185,7 @@ app.get("/initialCoordinates", authenticateToken, (req, res) => {
         .status(500)
         .json({ message: "Failed to fetch initial coordinates" });
     }
+    console.log("Length of coordinates " + results.length);
     res.status(200).json(results);
   });
 });
