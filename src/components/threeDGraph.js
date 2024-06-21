@@ -18,15 +18,18 @@ const ThreeDGraph = ({ data }) => {
       // Camera
       camera = new THREE.PerspectiveCamera(
         75,
-        window.innerWidth / window.innerHeight,
+        mountRef.current.clientWidth / mountRef.current.clientHeight,
         0.1,
         1000
       );
-      camera.position.set(0, 0, 10);
+      camera.position.set(0, 0, 25);
 
       // Renderer
       renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setSize(
+        mountRef.current.clientWidth,
+        mountRef.current.clientHeight
+      );
       mountRef.current.appendChild(renderer.domElement);
       rendererRef.current = renderer;
 
@@ -41,9 +44,7 @@ const ThreeDGraph = ({ data }) => {
 
       // Points
       if (data && data.length > 0) {
-        const points = data.map(({ x, y, z }) => {
-          return new THREE.Vector3(x, y, z);
-        });
+        const points = data.map(({ x, y, z }) => new THREE.Vector3(x, y, z));
 
         // Geometry for points
         const geometry = new THREE.BufferGeometry().setFromPoints(points);
@@ -55,6 +56,7 @@ const ThreeDGraph = ({ data }) => {
         pointsRef.current = new THREE.Points(geometry, material);
         scene.add(pointsRef.current);
 
+        // Lines (edges)
         const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
         const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
         const line = new THREE.Line(lineGeometry, lineMaterial);
@@ -64,7 +66,7 @@ const ThreeDGraph = ({ data }) => {
       // Animation loop
       const animate = () => {
         requestAnimationFrame(animate);
-        controls.update(); // Update controls in animation loop
+        controls.update();
         renderer.render(scene, camera);
       };
 
@@ -73,21 +75,37 @@ const ThreeDGraph = ({ data }) => {
 
     initThreeJS();
 
+    // Handle window resize
+    const handleResize = () => {
+      if (rendererRef.current && camera) {
+        const width = mountRef.current.clientWidth;
+        const height = mountRef.current.clientHeight;
+
+        rendererRef.current.setSize(width, height);
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+
     // Clean up Three.js resources
     return () => {
+      window.removeEventListener("resize", handleResize);
+
       if (rendererRef.current) {
         rendererRef.current.forceContextLoss();
         rendererRef.current.domElement.remove();
       }
 
       if (controlsRef.current) {
-        controlsRef.current.dispose(); // Dispose controls resources if needed
-        controlsRef.current = null; // Reset controls reference
+        controlsRef.current.dispose();
+        controlsRef.current = null;
       }
     };
   }, [data]);
 
-  return <div ref={mountRef} />;
+  return <div ref={mountRef} style={{ width: "100%", height: "100%" }} />;
 };
 
 export default ThreeDGraph;

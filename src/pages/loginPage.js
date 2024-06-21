@@ -33,6 +33,7 @@ const Login = () => {
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("name", response.data.user.name);
         setLoading(false);
+        console.log("Navigating to dashbaord");
         navigate(`/dashboard`, { replace: true });
       } catch (error) {
         console.error(error);

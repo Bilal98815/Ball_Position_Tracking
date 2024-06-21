@@ -33,6 +33,7 @@ const Signup = () => {
         });
         console.log(response.data);
         setLoading(false);
+        navigate("/", { replace: true });
       } catch (error) {
         console.error(error);
         setLoading(false);

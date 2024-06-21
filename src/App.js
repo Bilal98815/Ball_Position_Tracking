@@ -31,22 +31,14 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Place the authenticated routes first */}
-        {authenticated ? (
-          <>
-            <Route
-              path="/dashboard"
-              element={<ProtectedRoute element={<Dashboard />} />}
-            />
-            <Route path="*" element={<Navigate to="/dashboard" />} />
-          </>
-        ) : (
-          <>
-            <Route exact path="/" element={<Login />} />
-            <Route exact path="/register" element={<Signup />} />
-            <Route path="*" element={<Navigate to="/" />} />
-          </>
-        )}
+        <Route
+          exact
+          path="/"
+          element={authenticated ? <Dashboard /> : <Login />}
+        />
+        <Route exact path="/register" element={<Signup />} />
+        <Route exact path="/dashboard" element={<Dashboard />} />
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
   );
