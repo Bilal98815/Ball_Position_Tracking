@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../styles/main.css";
+import "../styles/login.css";
 import "../styles/util.css";
 import image from "../assets/img-01.png";
 import ButtonLoader from "../components/buttonLoader";
@@ -29,19 +29,64 @@ const Login = () => {
           email,
           password,
         });
-        console.log(response.data);
-        localStorage.setItem("token", response.data.token);
-        localStorage.setItem("name", response.data.user.name);
-        setLoading(false);
-        console.log("Navigating to dashbaord");
-        navigate(`/dashboard`, { replace: true });
+
+        switch (response.status) {
+          case 200:
+            localStorage.setItem("token", response.data.token);
+            localStorage.setItem("name", response.data.user.name);
+            setLoading(false);
+            navigate(`/dashboard`, { replace: true });
+            break;
+          case 400:
+            setLoading(false);
+            setTimeout(() => {
+              setError("");
+            }, 2000);
+            setError(response.data.message);
+            break;
+          case 401:
+            setLoading(false);
+            setTimeout(() => {
+              setError("");
+            }, 2000);
+            setError(response.data.message);
+            break;
+          case 500:
+            setLoading(false);
+            setTimeout(() => {
+              setError("");
+            }, 2000);
+            setError(response.data.message);
+            break;
+          default:
+            setLoading(false);
+            setTimeout(() => {
+              setError("");
+            }, 2000);
+            setError("Something went wrong");
+            break;
+        }
       } catch (error) {
-        console.error(error);
         setLoading(false);
-        setTimeout(() => {
-          setError("");
-        }, 2000);
-        setError(error);
+        if (error.response) {
+          console.error(error.response.data);
+          setTimeout(() => {
+            setError("");
+          }, 2000);
+          setError(error.response.data.message);
+        } else if (error.request) {
+          console.error("No response received from server:", error.request);
+          setTimeout(() => {
+            setError("");
+          }, 2000);
+          setError("No response received from server. Please try again later.");
+        } else {
+          console.error("Error during request setup:", error.message);
+          setTimeout(() => {
+            setError("");
+          }, 2000);
+          setError("Error during request setup. Please try again later.");
+        }
       }
     } else {
       setLoading(false);
@@ -61,7 +106,7 @@ const Login = () => {
               <img src={image} alt="IMG" />
             </div>
             <form className="login100-form validate-form">
-              <span className="login100-form-title">Member Login</span>
+              <span className="login100-form-title">Ball Monitor Login</span>
 
               <div className="wrap-input100 validate-input">
                 <input

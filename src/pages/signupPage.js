@@ -1,4 +1,4 @@
-import "../styles/main.css";
+import "../styles/signup.css";
 import "../styles/util.css";
 import image from "../assets/img-01.png";
 import { useState } from "react";
@@ -31,16 +31,68 @@ const Signup = () => {
           email,
           password,
         });
-        console.log(response.data);
-        setLoading(false);
-        navigate("/", { replace: true });
+
+        switch (response.status) {
+          case 201:
+            console.log(response.data);
+            setLoading(false);
+            navigate("/", { replace: true });
+            break;
+          case 200:
+            console.log(response.data);
+            setLoading(false);
+            navigate("/", { replace: true });
+            break;
+          case 400:
+            setLoading(false);
+            setTimeout(() => {
+              setError("");
+            }, 2000);
+            setError(response.data.message);
+            break;
+          case 401:
+            setLoading(false);
+            setTimeout(() => {
+              setError("");
+            }, 2000);
+            setError(response.data.message);
+            break;
+          case 500:
+            setLoading(false);
+            setTimeout(() => {
+              setError("");
+            }, 2000);
+            setError(response.data.message);
+            break;
+          default:
+            setLoading(false);
+            setTimeout(() => {
+              setError("");
+            }, 2000);
+            setError("Something went wrong");
+            break;
+        }
       } catch (error) {
-        console.error(error);
         setLoading(false);
-        setTimeout(() => {
-          setError("");
-        }, 2000);
-        setError(error);
+        if (error.response) {
+          console.error(error.response.data);
+          setTimeout(() => {
+            setError("");
+          }, 2000);
+          setError(error.response.data.message);
+        } else if (error.request) {
+          console.error("No response received from server:", error.request);
+          setTimeout(() => {
+            setError("");
+          }, 2000);
+          setError("No response received from server. Please try again later.");
+        } else {
+          console.error("Error during request setup:", error.message);
+          setTimeout(() => {
+            setError("");
+          }, 2000);
+          setError("Error during request setup. Please try again later.");
+        }
       }
     } else {
       setLoading(false);
@@ -60,7 +112,7 @@ const Signup = () => {
               <img src={image} alt="IMG" />
             </div>
             <form className="login100-form validate-form">
-              <span className="login100-form-title">User Register</span>
+              <span className="login100-form-title">Ball Monitor Register</span>
 
               <div className="wrap-input100 validate-input">
                 <input
