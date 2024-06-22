@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+// setting up websocket
 const socket = socketIOClient("http://localhost:3000");
 
 const Dashboard = () => {
@@ -19,6 +20,8 @@ const Dashboard = () => {
 
   useEffect(() => {
     setLoading(true);
+
+    // getting user name from local storage
     const tempName = localStorage.getItem("name");
     if (!tempName) {
       setLocalName("Nil");
@@ -26,6 +29,7 @@ const Dashboard = () => {
       setLocalName(tempName);
     }
 
+    // getting intial coordinates from database on startup
     const fetchInitialCoordinates = async () => {
       try {
         const response = await axios.get(
@@ -37,81 +41,88 @@ const Dashboard = () => {
           }
         );
 
-        switch (response.status) {
-          case 200:
-            setPosition(response.data);
-            break;
-          case 201:
-            setPosition(response.data);
-            break;
-          case 401:
-            console.log(response.status);
-            toast.error(response.status + " Unauthorized User!", {
-              position: "top-left",
-              autoClose: 3000,
-            });
-            break;
-          case 403:
-            console.log(response.status);
-            toast.error(response.status + " Error verifying token!", {
-              position: "top-left",
-              autoClose: 3000,
-            });
-            break;
-          case 500:
-            console.log(response.status);
-            toast.error(response.status + " " + response.data.message, {
-              position: "top-left",
-              autoClose: 3000,
-            });
-            break;
-
-          default:
-            console.log(response.status);
-            toast.error(response.status + " Something went wrong!", {
-              position: "top-left",
-              autoClose: 3000,
-            });
-            break;
+        if (response.status === 200 || response.status === 201) {
+          setPosition(response.data);
+        } else {
+          handleResponseError(response.status, response.data.message);
         }
       } catch (error) {
-        if (error.response) {
-          console.error("Error! " + error);
-          toast.error("Error! " + error, {
-            position: "top-left",
-            autoClose: 3000,
-          });
-        } else if (error.request) {
-          console.error("No response received from server:", error.request);
-          toast.error(
-            "No response received from server. Please try again later.",
-            {
-              position: "top-left",
-              autoClose: 3000,
-            }
-          );
-        } else {
-          console.error("Error during request setup:", error.message);
-          toast.error("Error during request setup. Please try again later.", {
-            position: "top-left",
-            autoClose: 3000,
-          });
-        }
+        handleError(error);
       }
+      setLoading(false);
     };
 
     fetchInitialCoordinates();
-    setLoading(false);
 
+    // getting new coordinates via websocket
     socket.on("ballPosition", (data) => {
       console.log(data);
       setPosition((prevPositions) => [...prevPositions, data]);
     });
 
-    // Clean up the event listener on component unmount
+    // Cleaning up the event listener on component unmount
     return () => socket.off("ballPosition");
-  }, []);
+  }, [token]);
 
+  const handleResponseError = (status, message) => {
+    switch (status) {
+      case 401:
+        console.log(status);
+        toast.error(`${status} Unauthorized User!`, {
+          position: "top-left",
+          autoClose: 3000,
+        });
+        break;
+      case 403:
+        console.log(status);
+        toast.error(`${status} Error verifying token!`, {
+          position: "top-left",
+          autoClose: 3000,
+        });
+        break;
+      case 500:
+        console.log(status);
+        toast.error(`${status} ${message}`, {
+          position: "top-left",
+          autoClose: 3000,
+        });
+        break;
+      default:
+        console.log(status);
+        toast.error(`${status} Something went wrong!`, {
+          position: "top-left",
+          autoClose: 3000,
+        });
+        break;
+    }
+  };
+
+  const handleError = (error) => {
+    if (error.response) {
+      console.error("Error response:", error.response);
+      toast.error(
+        `Error! ${error.response.status} ${error.response.statusText}`,
+        {
+          position: "top-left",
+          autoClose: 3000,
+        }
+      );
+    } else if (error.request) {
+      console.error("No response received from server:", error.request);
+      toast.error("No response received from server. Please try again later.", {
+        position: "top-left",
+        autoClose: 3000,
+      });
+    } else {
+      console.error("Error during request setup:", error.message);
+      toast.error("Error during request setup. Please try again later.", {
+        position: "top-left",
+        autoClose: 3000,
+      });
+    }
+  };
+
+  // logout function
   const handleLogout = () => {
     try {
       localStorage.removeItem("token");
@@ -126,8 +137,9 @@ const Dashboard = () => {
     }
   };
 
+  // sending random generated coordinates to backend
   const sendCoordinates = async () => {
-    const x = Math.random() * 10; // Simulate random coordinates
+    const x = Math.random() * 10;
     const y = Math.random() * 10;
     const z = Math.random() * 10;
 
@@ -144,73 +156,13 @@ const Dashboard = () => {
         }
       );
 
-      switch (response.status) {
-        case 200:
-          console.log(response.data.message);
-          break;
-        case 201:
-          console.log(response.data.message);
-          break;
-        case 400:
-          console.log(response.data.message);
-          toast.error(response.status + " " + response.data.message, {
-            position: "top-left",
-            autoClose: 3000,
-          });
-          break;
-        case 401:
-          console.log(response.status);
-          toast.error(response.status + " Unauthorized User!", {
-            position: "top-left",
-            autoClose: 3000,
-          });
-          break;
-        case 403:
-          console.log(response.status);
-          toast.error(response.status + " Error verifying token!", {
-            position: "top-left",
-            autoClose: 3000,
-          });
-          break;
-        case 500:
-          console.log(response.status);
-          toast.error(response.status + " " + response.data.message, {
-            position: "top-left",
-            autoClose: 3000,
-          });
-          break;
-
-        default:
-          console.log(response.status);
-          toast.error(response.status + " Something went wrong!", {
-            position: "top-left",
-            autoClose: 3000,
-          });
-          break;
+      if (response.status === 200 || response.status === 201) {
+        console.log(response.data.message);
+      } else {
+        handleResponseError(response.status, response.data.message);
       }
     } catch (error) {
-      if (error.response) {
-        console.error(error.response.data.message);
-        toast.error(error.response.data.message, {
-          position: "top-left",
-          autoClose: 3000,
-        });
-      } else if (error.request) {
-        console.error("No response received from server:", error.request);
-        toast.error(
-          "No response received from server. Please try again later.",
-          {
-            position: "top-left",
-            autoClose: 3000,
-          }
-        );
-      } else {
-        console.error("Error during request setup:", error.message);
-        toast.error("Error during request setup. Please try again later.", {
-          position: "top-left",
-          autoClose: 3000,
-        });
-      }
+      handleError(error);
     }
   };
 
@@ -218,12 +170,14 @@ const Dashboard = () => {
     return (
       <div className="loader">
         <Loader />
+        <ToastContainer />
       </div>
     );
   }
 
   return (
     <div className="dashboard-container">
+      <ToastContainer />
       <div className="left-side">
         <h1 className="dashboard-title">Hi, {localName}</h1>
         <div className="button-container">
@@ -239,8 +193,7 @@ const Dashboard = () => {
           tracking the object's path and monitoring its spatial coordinates
           right here in real-time!
         </p>
-        <div className="spacer"></div>{" "}
-        {/* Spacer to push logout button to bottom */}
+        <div className="spacer"></div>
         <button className="logout-button" onClick={handleLogout}>
           Logout
         </button>
@@ -248,7 +201,6 @@ const Dashboard = () => {
       <div className="graph-container">
         <ThreeDGraph data={position} />
       </div>
-      <ToastContainer />
     </div>
   );
 };

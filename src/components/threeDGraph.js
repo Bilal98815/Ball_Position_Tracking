@@ -38,7 +38,7 @@ const ThreeDGraph = ({ data }) => {
       controls.enableDamping = true;
       controlsRef.current = controls;
 
-      // Axes Helper (optional)
+      // Axes Helper
       const axesHelper = new THREE.AxesHelper(5);
       scene.add(axesHelper);
 
@@ -75,7 +75,7 @@ const ThreeDGraph = ({ data }) => {
 
     initThreeJS();
 
-    // Handle window resize
+    // Handling window resize
     const handleResize = () => {
       if (rendererRef.current && camera) {
         const width = mountRef.current.clientWidth;
@@ -89,7 +89,7 @@ const ThreeDGraph = ({ data }) => {
 
     window.addEventListener("resize", handleResize);
 
-    // Clean up Three.js resources
+    // Cleaning up Three.js resources
     return () => {
       window.removeEventListener("resize", handleResize);
 

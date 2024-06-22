@@ -19,19 +19,22 @@ const Signup = () => {
     navigate("/");
   };
 
-  const handleCreate = async (event) => {
+  // user signup
+  const userSignup = async (event) => {
     event.preventDefault();
 
     setLoading(true);
 
     if (name !== "" && email !== "" && password !== "") {
       try {
+        // signup API integration
         const response = await axios.post("http://localhost:3000/register", {
           name,
           email,
           password,
         });
 
+        // handlind exceptions and status codes
         switch (response.status) {
           case 201:
             console.log(response.data);
@@ -162,7 +165,7 @@ const Signup = () => {
               <div className="container-login100-form-btn">
                 <button
                   className="login100-form-btn"
-                  onClick={handleCreate}
+                  onClick={userSignup}
                   disabled={loading}
                 >
                   {loading ? <ButtonLoader /> : "Signup"}

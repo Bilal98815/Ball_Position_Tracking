@@ -18,18 +18,21 @@ const Login = () => {
     navigate("/register");
   };
 
-  const handleCreate = async (event) => {
+  // login function
+  const userLogin = async (event) => {
     event.preventDefault();
 
     setLoading(true);
 
     if (email !== "" && password !== "") {
       try {
+        // login API integration
         const response = await axios.post("http://localhost:3000/login", {
           email,
           password,
         });
 
+        // handlind different status codes
         switch (response.status) {
           case 200:
             localStorage.setItem("token", response.data.token);
@@ -141,7 +144,7 @@ const Login = () => {
               <div className="container-login100-form-btn">
                 <button
                   className="login100-form-btn"
-                  onClick={handleCreate}
+                  onClick={userLogin}
                   disabled={loading}
                 >
                   {loading ? <ButtonLoader /> : "Login"}
