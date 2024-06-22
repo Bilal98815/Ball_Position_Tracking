@@ -5,7 +5,8 @@ import ThreeDGraph from "../components/threeDGraph";
 import Loader from "../components/loader";
 import "../styles/dashboard.css";
 import { useNavigate } from "react-router-dom";
-import { div } from "three/examples/jsm/nodes/Nodes.js";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const socket = socketIOClient("http://localhost:3000");
 
@@ -36,10 +37,66 @@ const Dashboard = () => {
           }
         );
 
-        // Set initial coordinates in state
-        setPosition(response.data);
+        switch (response.status) {
+          case 200:
+            setPosition(response.data);
+            break;
+          case 201:
+            setPosition(response.data);
+            break;
+          case 401:
+            console.log(response.status);
+            toast.error(response.status + " Unauthorized User!", {
+              position: "top-left",
+              autoClose: 3000,
+            });
+            break;
+          case 403:
+            console.log(response.status);
+            toast.error(response.status + " Error verifying token!", {
+              position: "top-left",
+              autoClose: 3000,
+            });
+            break;
+          case 500:
+            console.log(response.status);
+            toast.error(response.status + " " + response.data.message, {
+              position: "top-left",
+              autoClose: 3000,
+            });
+            break;
+
+          default:
+            console.log(response.status);
+            toast.error(response.status + " Something went wrong!", {
+              position: "top-left",
+              autoClose: 3000,
+            });
+            break;
+        }
       } catch (error) {
-        console.error("Error fetching initial coordinates:", error);
+        if (error.response) {
+          console.error("Error! " + error);
+          toast.error("Error! " + error, {
+            position: "top-left",
+            autoClose: 3000,
+          });
+        } else if (error.request) {
+          console.error("No response received from server:", error.request);
+          toast.error(
+            "No response received from server. Please try again later.",
+            {
+              position: "top-left",
+              autoClose: 3000,
+            }
+          );
+        } else {
+          console.error("Error during request setup:", error.message);
+          toast.error("Error during request setup. Please try again later.", {
+            position: "top-left",
+            autoClose: 3000,
+          });
+        }
       }
     };
 
@@ -62,6 +119,10 @@ const Dashboard = () => {
       navigate("/", { replace: true });
     } catch (error) {
       console.log("Error: " + error);
+      toast.error(`Error: ${error}`, {
+        position: "top-left",
+        autoClose: 3000,
+      });
     }
   };
 
@@ -83,9 +144,73 @@ const Dashboard = () => {
         }
       );
 
-      console.log(response.data.message);
+      switch (response.status) {
+        case 200:
+          console.log(response.data.message);
+          break;
+        case 201:
+          console.log(response.data.message);
+          break;
+        case 400:
+          console.log(response.data.message);
+          toast.error(response.status + " " + response.data.message, {
+            position: "top-left",
+            autoClose: 3000,
+          });
+          break;
+        case 401:
+          console.log(response.status);
+          toast.error(response.status + " Unauthorized User!", {
+            position: "top-left",
+            autoClose: 3000,
+          });
+          break;
+        case 403:
+          console.log(response.status);
+          toast.error(response.status + " Error verifying token!", {
+            position: "top-left",
+            autoClose: 3000,
+          });
+          break;
+        case 500:
+          console.log(response.status);
+          toast.error(response.status + " " + response.data.message, {
+            position: "top-left",
+            autoClose: 3000,
+          });
+          break;
+
+        default:
+          console.log(response.status);
+          toast.error(response.status + " Something went wrong!", {
+            position: "top-left",
+            autoClose: 3000,
+          });
+          break;
+      }
     } catch (error) {
-      console.error("Error sending coordinates:", error);
+      if (error.response) {
+        console.error(error.response.data.message);
+        toast.error(error.response.data.message, {
+          position: "top-left",
+          autoClose: 3000,
+        });
+      } else if (error.request) {
+        console.error("No response received from server:", error.request);
+        toast.error(
+          "No response received from server. Please try again later.",
+          {
+            position: "top-left",
+            autoClose: 3000,
+          }
+        );
+      } else {
+        console.error("Error during request setup:", error.message);
+        toast.error("Error during request setup. Please try again later.", {
+          position: "top-left",
+          autoClose: 3000,
+        });
+      }
     }
   };
 
@@ -123,6 +248,7 @@ const Dashboard = () => {
       <div className="graph-container">
         <ThreeDGraph data={position} />
       </div>
+      <ToastContainer />
     </div>
   );
 };
