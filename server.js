@@ -12,8 +12,11 @@ const http = require("http");
 require("dotenv").config();
 const [JWT_SECRET] = process.env.JWT_SECRET;
 
+// using cors for sharing resources to different servers
 app.use(cors());
 const server = http.createServer(app);
+
+// creating websocket server
 const io = socketIo(server, {
   cors: {
     origin: "http://localhost:3001",
@@ -41,6 +44,7 @@ db.connect((err) => {
   }
 });
 
+// function to retrieve JWT token from header
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
@@ -179,6 +183,7 @@ app.post("/ballPositions", authenticateToken, (req, res) => {
   }
 });
 
+// API for getting intial coordinates from database
 app.get("/initialCoordinates", authenticateToken, (req, res) => {
   const userId = req.user.id; // Extracted from JWT token
 
@@ -196,6 +201,7 @@ app.get("/initialCoordinates", authenticateToken, (req, res) => {
   });
 });
 
+// websocket connection
 io.on("connection", (socket) => {
   console.log("New client connected");
 
